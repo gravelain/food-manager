@@ -7,7 +7,8 @@ class ProductAPITest(APITestCase):
     def test_create_product(self):
         data = {
             "name": "Riz",
-            "quantity": 10,
+            "category": "Épicerie",
+            "article_count": 10,
             "purchased_at": "2026-10-07",
             "expires_at": "2027-01-07",
         }
@@ -18,14 +19,19 @@ class ProductAPITest(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+        )
         self.assertEqual(response.data["name"], "Riz")
-        self.assertEqual(response.data["quantity"], 10)
+        self.assertEqual(response.data["category"], "Épicerie")
+        self.assertEqual(response.data["article_count"], 10)
 
     def test_create_product_with_invalid_dates(self):
         data = {
             "name": "Riz",
-            "quantity": 10,
+            "category": "Épicerie",
+            "article_count": 10,
             "purchased_at": "2026-10-07",
             "expires_at": "2026-01-07",
         }
@@ -36,16 +42,21 @@ class ProductAPITest(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
         self.assertIn(
-            "La date d'expiration ne peut pas être antérieure à la date d'achat.",
+            "La date d'expiration ne peut pas être antérieure "
+            "à la date d'achat.",
             str(response.data),
         )
 
-    def test_create_product_with_negative_quantity(self):
+    def test_create_product_with_negative_article_count(self):
         data = {
             "name": "Sucre",
-            "quantity": -5,
+            "category": "Épicerie",
+            "article_count": -5,
             "purchased_at": "2026-10-07",
             "expires_at": "2027-01-07",
         }
@@ -56,14 +67,17 @@ class ProductAPITest(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("quantity", response.data)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("article_count", response.data)
 
     def test_update_product(self):
-        # Create a product first
         data = {
             "name": "Farine",
-            "quantity": 5,
+            "category": "Épicerie",
+            "article_count": 5,
             "purchased_at": "2026-10-07",
             "expires_at": "2027-01-07",
         }
@@ -76,10 +90,10 @@ class ProductAPITest(APITestCase):
 
         product_id = response.data["id"]
 
-        # Update the product
         updated_data = {
             "name": "Farine de blé",
-            "quantity": 8,
+            "category": "Épicerie",
+            "article_count": 8,
             "purchased_at": "2026-10-07",
             "expires_at": "2027-02-07",
         }
@@ -90,15 +104,28 @@ class ProductAPITest(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["name"], "Farine de blé")
-        self.assertEqual(response.data["quantity"], 8)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.data["name"],
+            "Farine de blé",
+        )
+        self.assertEqual(
+            response.data["category"],
+            "Épicerie",
+        )
+        self.assertEqual(
+            response.data["article_count"],
+            8,
+        )
 
     def test_partial_update_product(self):
-        # Create a product first
         data = {
             "name": "Lait",
-            "quantity": 3,
+            "category": "Produits frais",
+            "article_count": 3,
             "purchased_at": "2026-10-07",
             "expires_at": "2026-11-07",
         }
@@ -111,9 +138,8 @@ class ProductAPITest(APITestCase):
 
         product_id = response.data["id"]
 
-        # Partially update the product
         partial_data = {
-            "quantity": 5,
+            "article_count": 5,
         }
 
         response = self.client.patch(
@@ -122,14 +148,20 @@ class ProductAPITest(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["quantity"], 5)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.data["article_count"],
+            5,
+        )
 
     def test_get_product_list(self):
-        # Create a product first
         data = {
             "name": "Beurre",
-            "quantity": 2,
+            "category": "Produits frais",
+            "article_count": 2,
             "purchased_at": "2026-10-07",
             "expires_at": "2026-12-07",
         }
@@ -142,14 +174,20 @@ class ProductAPITest(APITestCase):
 
         response = self.client.get("/api/products/")
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data), 1)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertGreaterEqual(
+            len(response.data),
+            1,
+        )
 
     def test_get_product_detail(self):
-        # Create a product first
         data = {
             "name": "Fromage",
-            "quantity": 4,
+            "category": "Produits frais",
+            "article_count": 4,
             "purchased_at": "2026-10-07",
             "expires_at": "2026-12-07",
         }
@@ -162,20 +200,42 @@ class ProductAPITest(APITestCase):
 
         product_id = response.data["id"]
 
-        response = self.client.get(f"/api/products/{product_id}/")
+        response = self.client.get(
+            f"/api/products/{product_id}/"
+        )
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["name"], "Fromage")
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.data["name"],
+            "Fromage",
+        )
+        self.assertEqual(
+            response.data["category"],
+            "Produits frais",
+        )
+        self.assertEqual(
+            response.data["article_count"],
+            4,
+        )
 
     def test_get_nonexistent_product_detail(self):
-        response = self.client.get("/api/products/9999/")
+        response = self.client.get(
+            "/api/products/9999/"
+        )
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
 
     def test_delete_product(self):
         data = {
             "name": "Produit à supprimer",
-            "quantity": 1,
+            "category": "Épicerie",
+            "article_count": 1,
             "purchased_at": "2026-10-07",
             "expires_at": "2026-12-07",
         }
@@ -192,10 +252,16 @@ class ProductAPITest(APITestCase):
             f"/api/products/{product_id}/"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+        )
 
         response = self.client.get(
             f"/api/products/{product_id}/"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
