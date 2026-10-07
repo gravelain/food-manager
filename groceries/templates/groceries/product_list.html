@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes produits</title>
+</head>
+<body>
+
+    <h1>Mes produits</h1>
+
+    <ul>
+        {% for product in products %}
+            <li>
+                Nom : {{ product.name }} —
+                Quantité : {{ product.quantity }} —
+                Achat : {{ product.purchased_at }} —
+                Expiration : {{ product.expires_at }}
+            </li>
+        {% empty %}
+            <li>Aucun produit.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
